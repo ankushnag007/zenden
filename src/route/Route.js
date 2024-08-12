@@ -13,7 +13,7 @@ const Route = () => {
 const token = "dfedg3r3453453454234"
   return (
   <>
-      {token ? (
+      {!token ? (
         <AuthStack />
       ) : (
         <HomeStack/>        

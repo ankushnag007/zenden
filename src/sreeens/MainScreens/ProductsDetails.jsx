@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { CartContext } from '../../context';
@@ -12,23 +12,36 @@ const ProductsDetails = ({ navigation }) => {
     const [selectedSize, setSelectedSize] = useState('M');
     const [quantity, setQuantity] = useState(1);
     const [modalVisible, setModalVisible] = useState(false);  // State for the modal
+    const [loading, setLoading] = useState(true); // State for loading
 
     useEffect(() => {
         const fetchProductDetails = async () => {
             try {
+                setLoading(true); // Start loading
                 const response = await fetch(`https://fakestoreapi.com/products/${itemId}`);
                 const data = await response.json();
                 setProduct(data);
             } catch (error) {
                 console.error('Error fetching product details:', error);
+            } finally {
+                setLoading(false); // End loading
             }
         };
 
         fetchProductDetails();
     }, [itemId]);
 
+    if (loading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#FF5722" />
+                <Text style={styles.loaderText}>Loading...</Text>
+            </View>
+        );
+    }
+
     if (!product) {
-        return <Text>Loading...</Text>;
+        return <Text>Product not found</Text>;
     }
 
     const handleAddToCart = () => {
@@ -274,6 +287,17 @@ const styles = StyleSheet.create({
     modalText: {
         fontSize: 18,
         fontWeight: 'bold',
+        color: '#333',
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    loaderText: {
+        marginTop: 10,
+        fontSize: 18,
         color: '#333',
     },
 });
