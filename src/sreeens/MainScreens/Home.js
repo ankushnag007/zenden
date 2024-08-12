@@ -10,13 +10,14 @@ const Home = () => {
   const categories = ['All', "men's clothing", "jewelery", "electronics", "women's clothing"];
   const [productsData, setProductsData] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [loading, setLoading] = useState(true); // Loading state for initial data fetch
-  const [loadingCategory, setLoadingCategory] = useState(false); // Loading state for category selection
+  const [loading, setLoading] = useState(true);
+  const [loadingCategory, setLoadingCategory] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setLoading(true); // Set loading to true when starting fetch
+        setLoading(true);
         const response = await fetch('https://fakestoreapi.com/products');
         const data = await response.json();
         const transformedData = data.map(product => ({
@@ -27,7 +28,7 @@ const Home = () => {
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
-        setLoading(false); // Set loading to false when data fetching is complete
+        setLoading(false);
       }
     };
 
@@ -35,22 +36,28 @@ const Home = () => {
   }, []);
 
   const handleCategoryChange = (category) => {
-    setLoadingCategory(true); // Show loader when changing category
+    setLoadingCategory(true);
     setSelectedCategory(category);
 
-    // Simulate network request delay
     setTimeout(() => {
-      setLoadingCategory(false); // Hide loader after category change
-    }, 1000); // Adjust this delay as needed
+      setLoadingCategory(false);
+    }, 1000);
   };
 
-  const filteredProducts = selectedCategory === 'All'
-    ? productsData
-    : productsData.filter(product => product.category === selectedCategory);
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+  };
+
+  const filteredProducts = productsData
+    .filter(product => {
+      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+      const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) || product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
 
   const handleLike = (id) => {
-    setProductsData(prevProducts => 
-      prevProducts.map(product => 
+    setProductsData(prevProducts =>
+      prevProducts.map(product =>
         product.id === id ? { ...product, isFav: !product.isFav } : product
       )
     );
@@ -76,7 +83,12 @@ const Home = () => {
                 <View style={styles.iconContainer}>
                   <Fontisto name={'search'} size={25} color={'#C0C0C0'} />
                 </View>
-                <TextInput style={styles.TextInput} placeholder='Search' />
+                <TextInput
+                  style={styles.TextInput}
+                  placeholder='Search'
+                  value={searchQuery}
+                  onChangeText={handleSearch}
+                />
               </View>
               <View style={{ padding: 10 }}>
                 <FlatList
@@ -85,7 +97,7 @@ const Home = () => {
                     <Category
                       item={item}
                       selectedCategory={selectedCategory}
-                      setSelectedCategory={handleCategoryChange} // Pass the new handler
+                      setSelectedCategory={handleCategoryChange}
                     />
                   )}
                   keyExtractor={(item) => item}
